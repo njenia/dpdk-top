@@ -4,7 +4,11 @@ Real-time terminal monitoring for [DPDK](https://www.dpdk.org/) applications.
 
 Connects to any running DPDK process via the telemetry Unix socket and displays live port stats, throughput rates, per-queue distribution, mempool utilization, and historical charts — without modifying the monitored application or linking against DPDK.
 
-Works with **testpmd**, **l3fwd**, **VPP**, and any custom DPDK application that has telemetry enabled (default since DPDK 19.11).
+Works with **testpmd**, **l3fwd**, and any custom DPDK application that has telemetry enabled (default since DPDK 19.11).
+
+![Dashboard](screenshots/dashboard.png)
+![Ports](screenshots/ports.png)
+![Graphs](screenshots/graphs.png)
 
 ## Install
 
