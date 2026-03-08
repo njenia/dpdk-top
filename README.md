@@ -8,6 +8,8 @@ Works with **testpmd**, **l3fwd**, and any custom DPDK application that has tele
 
 ![Dashboard](screenshots/dashboard.png)
 
+---
+
 ![Graphs](screenshots/graphs.png)
 
 ## Install
