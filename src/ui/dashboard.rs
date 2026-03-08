@@ -1,0 +1,155 @@
+//! Dashboard view: overview of all ports + queues + mempools.
+
+use ratatui::layout::{Constraint, Direction, Layout, Rect};
+use ratatui::style::Style;
+use ratatui::text::{Line, Span};
+use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
+use ratatui::Frame;
+
+use crate::model::port::LinkStatus;
+use crate::ui::format::{format_bps, format_int, format_rate};
+use crate::ui::theme::*;
+
+use std::sync::Arc;
+
+use crate::model::state::AppState;
+
+pub fn render_dashboard(frame: &mut Frame, state: &Arc<AppState>, area: Rect) {
+    let body_chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Min(4),
+            Constraint::Length(5),
+            Constraint::Length(5),
+        ])
+        .split(area);
+
+    let ports = state.ports.read().unwrap();
+    let mempools = state.mempools.read().unwrap();
+    let selected_id = *state.selected_port_id.read().unwrap();
+
+    // Ports table
+    if !ports.is_empty() {
+        let mut rows = vec![Line::from(vec![
+            Span::raw(" ID  "),
+            Span::raw("Name/PCI        "),
+            Span::raw("Link    "),
+            Span::raw("RX pps     "),
+            Span::raw("TX pps     "),
+            Span::raw("RX Mbps "),
+            Span::raw("TX Mbps "),
+        ])];
+        for port in ports.iter() {
+            let link_str = match port.info.link_status {
+                LinkStatus::Up => {
+                    if port.info.link_speed_mbps > 0 {
+                        format!("{}G UP", port.info.link_speed_mbps / 1000)
+                    } else {
+                        "UP".to_string()
+                    }
+                }
+                LinkStatus::Down => "DOWN".to_string(),
+                LinkStatus::Unknown => "--".to_string(),
+            };
+            let rx_pps = format_rate(port.rates.rx_pps);
+            let tx_pps = format_rate(port.rates.tx_pps);
+            let rx_mbps = format_bps(port.rates.rx_bps)
+                .replace(" Mbps", "")
+                .replace(" Gbps", "");
+            let tx_mbps = format_bps(port.rates.tx_bps)
+                .replace(" Mbps", "")
+                .replace(" Gbps", "");
+            let sel = if port.id == selected_id { "▶" } else { " " };
+            let link_style = if port.info.link_status == LinkStatus::Up {
+                link_up_style()
+            } else {
+                link_down_style()
+            };
+            let row_style = if port.id == selected_id {
+                selected_style()
+            } else {
+                Style::default()
+            };
+            rows.push(Line::from(vec![
+                Span::styled(format!("{} {}", sel, port.id), row_style),
+                Span::raw(" "),
+                Span::styled(
+                    format!(
+                        "{:16}",
+                        port.info.pci.as_str().chars().take(16).collect::<String>()
+                    ),
+                    row_style,
+                ),
+                Span::styled(format!("{:8} ", link_str), link_style),
+                Span::styled(format!("{:>10} ", rx_pps), row_style),
+                Span::styled(format!("{:>10} ", tx_pps), row_style),
+                Span::styled(format!("{:>8} ", rx_mbps), row_style),
+                Span::styled(format!("{:>8} ", tx_mbps), row_style),
+            ]));
+        }
+        frame.render_widget(
+            Paragraph::new(rows)
+                .block(Block::default().title(" Ports ").borders(Borders::ALL))
+                .wrap(Wrap { trim: false }),
+            body_chunks[0],
+        );
+    }
+
+    // Queue distribution for selected port
+    if let Some(port) = ports.iter().find(|p| p.id == selected_id) {
+        let mut q_lines = vec![Line::from(format!(
+            " Port {} — Queues (RX pps) ",
+            selected_id
+        ))];
+        let total_rx: f64 = port.queue_stats.iter().map(|q| q.rx_pps).sum();
+        let max_rx = total_rx.max(1.0);
+        for (i, q) in port.queue_stats.iter().take(8).enumerate() {
+            let pct = (q.rx_pps / max_rx * 20.0) as usize;
+            let bar: String = "█".repeat(pct) + &"░".repeat(20 - pct);
+            q_lines.push(Line::from(format!(
+                " Q{} {} {:>10}/s",
+                i,
+                bar,
+                format_rate(q.rx_pps)
+            )));
+        }
+        if port.queue_stats.is_empty() {
+            q_lines.push(Line::from(" (no queue stats) "));
+        }
+        frame.render_widget(
+            Paragraph::new(q_lines).block(Block::default().title(" Queues ").borders(Borders::ALL)),
+            body_chunks[1],
+        );
+    } else if !ports.is_empty() {
+        frame.render_widget(
+            Paragraph::new(" Select a port to see queue distribution ")
+                .block(Block::default().title(" Queues ").borders(Borders::ALL)),
+            body_chunks[1],
+        );
+    }
+
+    // Mempools summary
+    if !mempools.is_empty() {
+        let mut mp_lines = vec![];
+        for mp in mempools.iter() {
+            mp_lines.push(Line::from(format!(
+                " {}   {} / {}  ({:.1}%)",
+                mp.name,
+                format_int(mp.in_use),
+                format_int(mp.size),
+                mp.utilization_pct
+            )));
+        }
+        frame.render_widget(
+            Paragraph::new(mp_lines)
+                .block(Block::default().title(" Mempools ").borders(Borders::ALL)),
+            body_chunks[2],
+        );
+    } else {
+        frame.render_widget(
+            Paragraph::new(" No mempools ")
+                .block(Block::default().title(" Mempools ").borders(Borders::ALL)),
+            body_chunks[2],
+        );
+    }
+}

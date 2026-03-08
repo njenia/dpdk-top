@@ -1,0 +1,20 @@
+# Run DPDK testpmd + dpdk-top in one container (for testing on Mac/Linux).
+# Usage: docker compose -f docker/docker-compose.yml run --rm dpdk-top
+# Or:    docker compose -f docker/docker-compose.yml up
+#
+# The app uses virtual devices (net_null) only — no real NIC takeover in Docker on Mac.
+# Good for testing dpdk-top; for real NIC use Linux with PCI passthrough.
+
+services:
+  dpdk-top:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: dpdk-top-demo:latest
+    stdin_open: true
+    tty: true
+    cap_add:
+      - IPC_LOCK
+    # Optional: mount a dir if you want the socket on the host (e.g. for a separate dpdk-top run on Linux)
+    # volumes:
+    #   - ./dpdk-socket:/var/run/dpdk
