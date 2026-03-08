@@ -89,7 +89,7 @@ pub fn render_dashboard(frame: &mut Frame, state: &Arc<AppState>, area: Rect) {
         }
         frame.render_widget(
             Paragraph::new(rows)
-                .block(Block::default().title(" Ports ").borders(Borders::ALL))
+                .block(Block::default().title(format!(" Ports ({}) ", ports.len())).borders(Borders::ALL))
                 .wrap(Wrap { trim: false }),
             body_chunks[0],
         );
@@ -116,8 +116,14 @@ pub fn render_dashboard(frame: &mut Frame, state: &Arc<AppState>, area: Rect) {
         if port.queue_stats.is_empty() {
             q_lines.push(Line::from(" (no queue stats) "));
         }
+        let total_queues = port.info.nb_rx_queues;
+        let queue_title = if total_queues > 0 {
+            format!(" Queues ({}) ", total_queues)
+        } else {
+            " Queues ".to_string()
+        };
         frame.render_widget(
-            Paragraph::new(q_lines).block(Block::default().title(" Queues ").borders(Borders::ALL)),
+            Paragraph::new(q_lines).block(Block::default().title(queue_title).borders(Borders::ALL)),
             body_chunks[1],
         );
     } else if !ports.is_empty() {
@@ -142,7 +148,7 @@ pub fn render_dashboard(frame: &mut Frame, state: &Arc<AppState>, area: Rect) {
         }
         frame.render_widget(
             Paragraph::new(mp_lines)
-                .block(Block::default().title(" Mempools ").borders(Borders::ALL)),
+                .block(Block::default().title(format!(" Mempools ({}) ", mempools.len())).borders(Borders::ALL)),
             body_chunks[2],
         );
     } else {
