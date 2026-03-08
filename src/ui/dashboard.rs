@@ -23,14 +23,14 @@ pub fn render_dashboard(frame: &mut Frame, state: &Arc<AppState>, area: Rect) {
     // Ports: header + 1 row per port + 2 borders. Always at least 6 rows (room for ~3 ports).
     let ports_height = (ports.len() as u16 + 3).max(6);
 
-    // Queues: exactly nb_rx_queues rows + 2 borders (+ 0 extra padding).
-    // Falls back to 4 rows if port info not yet available.
+    // Queues: 1 row per queue + 1 title row + 2 borders, capped at 30% of viewport.
     let queue_count = ports
         .iter()
         .find(|p| p.id == selected_id)
         .map(|p| p.info.nb_rx_queues.max(p.queue_stats.len() as u16))
         .unwrap_or(0);
-    let queues_height = (queue_count + 2).max(4);
+    let queues_max = (area.height * 30 / 100).max(4);
+    let queues_height = (queue_count + 3).min(queues_max).max(4);
 
     // Mempools: 1 row per pool + 2 borders.
     let mp_height = (mempools.len().max(1) as u16 + 2).max(3);
