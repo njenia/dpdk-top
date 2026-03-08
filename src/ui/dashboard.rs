@@ -15,17 +15,25 @@ use std::sync::Arc;
 use crate::model::state::AppState;
 
 pub fn render_dashboard(frame: &mut Frame, state: &Arc<AppState>, area: Rect) {
+    let ports = state.ports.read().unwrap();
+    let mempools = state.mempools.read().unwrap();
+
+    // Ports: 1 header row + 1 row per port + 2 border rows, capped at 30% of area
+    let ports_rows = (ports.len() + 3) as u16;
+    let ports_height = ports_rows.min((area.height * 30 / 100).max(4));
+
+    // Mempools: 1 row per mempool + 2 border rows, capped at ~20% of area
+    let mp_rows = (mempools.len().max(1) + 2) as u16;
+    let mp_height = mp_rows.min((area.height * 20 / 100).max(3));
+
     let body_chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
+            Constraint::Length(ports_height),
             Constraint::Min(4),
-            Constraint::Length(5),
-            Constraint::Length(5),
+            Constraint::Length(mp_height),
         ])
         .split(area);
-
-    let ports = state.ports.read().unwrap();
-    let mempools = state.mempools.read().unwrap();
     let selected_id = *state.selected_port_id.read().unwrap();
 
     // Ports table
