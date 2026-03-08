@@ -6,9 +6,13 @@ Connects to any running DPDK process via the telemetry Unix socket and displays 
 
 Works with **testpmd**, **l3fwd**, and any custom DPDK application that has telemetry enabled (default since DPDK 19.11).
 
-![Dashboard](screenshots/dashboard.png)
-![Ports](screenshots/ports.png)
-![Graphs](screenshots/graphs.png)
+<p>
+  <img src="screenshots/dashboard.png" width="49%" alt="Dashboard"/>
+  <img src="screenshots/ports.png" width="49%" alt="Ports"/>
+</p>
+<p>
+  <img src="screenshots/graphs.png" width="49%" alt="Graphs"/>
+</p>
 
 ## Install
 
