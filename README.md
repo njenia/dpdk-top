@@ -6,12 +6,9 @@ Connects to any running DPDK process via the telemetry Unix socket and displays 
 
 Works with **testpmd**, **l3fwd**, and any custom DPDK application that has telemetry enabled (default since DPDK 19.11).
 
-| Dashboard | Ports |
-|:---------:|:-----:|
+| | |
+|:-:|:-:|
 | ![Dashboard](screenshots/dashboard.png) | ![Ports](screenshots/ports.png) |
-
-| Graphs | Mempools |
-|:------:|:--------:|
 | ![Graphs](screenshots/graphs.png) | ![Mempools](screenshots/mempools.png) |
 
 ## Install
