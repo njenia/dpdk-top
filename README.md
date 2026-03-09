@@ -10,9 +10,15 @@ Works with **testpmd**, **l3fwd**, and any custom DPDK application that has tele
 
 ## Install
 
-**Linux / macOS:**
+**Pre-built binary (Linux / macOS):**
 ```bash
 curl -sSL https://raw.githubusercontent.com/njenia/dpdk-top/main/install.sh | bash
+```
+Downloads a static binary from [GitHub Releases](https://github.com/njenia/dpdk-top/releases) — no dependencies, no Rust toolchain needed.
+
+**With cargo:**
+```bash
+cargo install dpdk-top
 ```
 
 **From source:**
@@ -21,11 +27,6 @@ git clone https://github.com/njenia/dpdk-top.git
 cd dpdk-top
 cargo build --release
 sudo cp target/release/dpdk-top /usr/local/bin/
-```
-
-**Static binary (Linux musl):**
-```bash
-cargo build --release --target x86_64-unknown-linux-musl
 ```
 
 ## Quick start
