@@ -8,7 +8,6 @@ NC='\033[0m'
 
 REPO="njenia/dpdk-top"
 BINARY_NAME="dpdk-top"
-INSTALL_DIR="${INSTALL_DIR:-/usr/local/bin}"
 
 detect_platform() {
     OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
@@ -35,8 +34,25 @@ detect_platform() {
     esac
 }
 
+pick_install_dir() {
+    if [ -n "$INSTALL_DIR" ]; then
+        return
+    fi
+
+    if [ -w /usr/local/bin ]; then
+        INSTALL_DIR="/usr/local/bin"
+    elif command -v sudo &> /dev/null && sudo -n true 2>/dev/null; then
+        INSTALL_DIR="/usr/local/bin"
+        USE_SUDO=1
+    else
+        INSTALL_DIR="${HOME}/.local/bin"
+        mkdir -p "$INSTALL_DIR"
+    fi
+}
+
 install() {
     detect_platform
+    pick_install_dir
 
     VERSION="${VERSION:-latest}"
     if [ "$VERSION" = "latest" ]; then
@@ -47,6 +63,7 @@ install() {
 
     echo -e "${GREEN}Installing ${BINARY_NAME}...${NC}"
     echo "Platform: ${PLATFORM}-${ARCH}"
+    echo "Target:   ${INSTALL_DIR}"
 
     TMP_DIR=$(mktemp -d)
     trap "rm -rf $TMP_DIR" EXIT
@@ -63,7 +80,7 @@ install() {
     cd "$TMP_DIR"
     tar -xzf "${BINARY_NAME}.tar.gz"
 
-    if [ ! -w "$INSTALL_DIR" ]; then
+    if [ "${USE_SUDO:-0}" = "1" ]; then
         sudo mv "$BINARY_NAME" "$INSTALL_DIR/"
         sudo chmod +x "$INSTALL_DIR/$BINARY_NAME"
     else
@@ -71,12 +88,16 @@ install() {
         chmod +x "$INSTALL_DIR/$BINARY_NAME"
     fi
 
-    if command -v "$BINARY_NAME" &> /dev/null; then
-        echo -e "${GREEN}✓ Installed ${BINARY_NAME} to ${INSTALL_DIR}/${BINARY_NAME}${NC}"
-        echo "Run 'sudo dpdk-top' to get started."
+    echo -e "${GREEN}✓ Installed ${BINARY_NAME} to ${INSTALL_DIR}/${BINARY_NAME}${NC}"
+
+    if ! echo "$PATH" | tr ':' '\n' | grep -qx "$INSTALL_DIR"; then
+        echo ""
+        echo -e "${YELLOW}Add to your PATH:${NC}"
+        echo "  export PATH=\"${INSTALL_DIR}:\$PATH\""
+        echo ""
+        echo "Then run: sudo dpdk-top"
     else
-        echo -e "${YELLOW}Installed to ${INSTALL_DIR}/${BINARY_NAME}${NC}"
-        echo "Make sure $INSTALL_DIR is in your PATH."
+        echo "Run 'sudo dpdk-top' to get started."
     fi
 }
 
