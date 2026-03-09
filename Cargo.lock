@@ -321,6 +321,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "dpdk-telemetry"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "dirs",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "uds",
+]
+
+[[package]]
 name = "dpdk-top"
 version = "0.1.0"
 dependencies = [
@@ -329,13 +341,12 @@ dependencies = [
  "clap",
  "crossterm",
  "ctrlc",
- "dirs",
+ "dpdk-telemetry",
  "ratatui",
  "serde",
  "serde_json",
  "tempfile",
  "thiserror",
- "uds",
 ]
 
 [[package]]

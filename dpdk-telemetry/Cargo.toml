@@ -1,0 +1,20 @@
+[package]
+name = "dpdk-telemetry"
+version = "0.1.0"
+edition = "2021"
+description = "Rust client library for DPDK telemetry via Unix socket — no DPDK linking required"
+license = "Apache-2.0 OR MIT"
+authors = ["Jenia Nikolaev"]
+repository = "https://github.com/njenia/dpdk-top"
+homepage = "https://github.com/njenia/dpdk-top"
+keywords = ["dpdk", "telemetry", "networking", "monitoring"]
+categories = ["network-programming"]
+readme = "README.md"
+
+[dependencies]
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+dirs = "5.0"
+uds = "0.4"

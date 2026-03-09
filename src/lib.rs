@@ -8,5 +8,6 @@
 pub mod engine;
 pub mod model;
 pub mod output;
-pub mod telemetry;
 pub mod ui;
+
+pub use dpdk_telemetry;

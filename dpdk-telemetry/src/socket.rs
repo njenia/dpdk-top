@@ -5,6 +5,7 @@ use anyhow::{Context, Result};
 use std::io::{Read, Write};
 use std::path::Path;
 
+#[allow(dead_code)]
 enum TelemetrySocketInner {
     Seqpacket(uds::UnixSeqpacketConn),
     Stream(std::os::unix::net::UnixStream),

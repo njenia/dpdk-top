@@ -60,7 +60,6 @@ pub fn discover_sockets() -> Result<Vec<PathBuf>> {
         }
     }
 
-    // Resolve symlinks to deduplicate (e.g. /run/dpdk and /var/run/dpdk are the same on Linux)
     let mut resolved = Vec::new();
     for p in found {
         let canonical = p.canonicalize().unwrap_or_else(|_| p.clone());

@@ -5,12 +5,15 @@ use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-use crate::engine::alerts::{evaluate_mempool_alerts, evaluate_port_alerts, Alert};
-use crate::engine::rates;
-use crate::model::port::{LinkStatus, PortState};
+use dpdk_telemetry::alerts::{evaluate_mempool_alerts, evaluate_port_alerts, Alert};
+use dpdk_telemetry::history::RingBuffer;
+use dpdk_telemetry::model::port::{LinkStatus, PortState};
+use dpdk_telemetry::model::MempoolState;
+use dpdk_telemetry::protocol::*;
+use dpdk_telemetry::rates;
+use dpdk_telemetry::TelemetrySocket;
+
 use crate::model::state::AppState;
-use crate::telemetry::protocol::*;
-use crate::telemetry::TelemetrySocket;
 
 const DISCOVERY_INTERVAL_SECS: u64 = 10;
 
@@ -91,17 +94,15 @@ impl Poller {
         let mut mempools = self.state.mempools.write().unwrap();
         let mut mempool_history = self.state.mempool_history.write().unwrap();
 
-        // Add new ports
         for &id in &port_ids {
             if !ports.iter().any(|p| p.id == id) {
                 ports.push(PortState::new(id));
-                port_history.push(crate::engine::history::RingBuffer::new());
+                port_history.push(RingBuffer::new());
             }
         }
         ports.retain(|p| port_ids.contains(&p.id));
         port_history.truncate(ports.len());
 
-        // Fetch info for each port
         for port in ports.iter_mut() {
             let resp = sock.request(&format!("/ethdev/info,{}", port.id));
             if let Ok(r) = resp {
@@ -111,18 +112,17 @@ impl Poller {
             }
         }
 
-        // Mempools
         let mut new_mempools = Vec::new();
         for name in &mempool_names {
             let resp = sock.request(&format!("/mempool/info,{}", name));
             if let Ok(r) = resp {
                 if let Ok(info) = parse_mempool_info(&r, name) {
-                    new_mempools.push(crate::model::MempoolState::from_info(&info));
+                    new_mempools.push(MempoolState::from_info(&info));
                 }
             }
         }
         *mempools = new_mempools;
-        mempool_history.resize_with(mempools.len(), crate::engine::history::RingBuffer::new);
+        mempool_history.resize_with(mempools.len(), RingBuffer::new);
 
         Ok(())
     }
@@ -145,8 +145,6 @@ impl Poller {
                 Err(_) => continue,
             };
 
-            // If stats_current is still the zero baseline (first poll), just seed it
-            // and skip rate computation to avoid a spurious spike from the full cumulative counter.
             if port.stats_current.ipackets == 0 && port.stats_current.ibytes == 0 {
                 port.stats_current = current_stats;
                 continue;

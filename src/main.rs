@@ -8,7 +8,6 @@
 mod engine;
 mod model;
 mod output;
-mod telemetry;
 mod ui;
 
 use anyhow::Result;
@@ -17,9 +16,10 @@ use std::path::PathBuf;
 use std::sync::atomic::AtomicBool;
 use std::sync::Arc;
 
+use dpdk_telemetry::discovery::discover_sockets;
+
 use engine::poller::Poller;
 use model::state::AppState;
-use telemetry::discovery::discover_sockets;
 use ui::app::run_tui;
 
 /// Real-time terminal-based monitoring for DPDK applications.
@@ -66,7 +66,6 @@ struct Args {
 fn main() -> Result<()> {
     let args = Args::parse();
 
-    // Resolve all socket paths to monitor
     let socket_paths: Vec<PathBuf> = match &args.socket {
         Some(p) => vec![p.clone()],
         None => {
@@ -96,7 +95,6 @@ fn main() -> Result<()> {
         }
     };
 
-    // --once and --json operate on the first socket only
     let primary_path = &socket_paths[0];
 
     if args.once {
@@ -111,7 +109,6 @@ fn main() -> Result<()> {
         return ui::app::run_watch_mode(primary_path, args.interval, xstat);
     }
 
-    // TUI mode — create one AppState + Poller per discovered socket
     let shutdown = Arc::new(AtomicBool::new(false));
 
     let instances: Vec<Arc<AppState>> = socket_paths

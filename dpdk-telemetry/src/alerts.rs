@@ -41,6 +41,16 @@ impl Alert {
             since: Instant::now(),
         }
     }
+
+    pub fn with_port(mut self, port_id: u16) -> Self {
+        self.port_id = Some(port_id);
+        self
+    }
+
+    pub fn with_value(mut self, value: f64) -> Self {
+        self.value = Some(value);
+        self
+    }
 }
 
 /// Evaluate mempool-only alerts.
@@ -100,17 +110,6 @@ pub fn evaluate_port_alerts(
         );
     }
     out
-}
-
-impl Alert {
-    fn with_port(mut self, port_id: u16) -> Self {
-        self.port_id = Some(port_id);
-        self
-    }
-    fn with_value(mut self, value: f64) -> Self {
-        self.value = Some(value);
-        self
-    }
 }
 
 /// For JSON output.

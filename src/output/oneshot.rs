@@ -4,8 +4,8 @@ use anyhow::Result;
 use std::path::Path;
 use std::time::Duration;
 
-use crate::telemetry::protocol::*;
-use crate::telemetry::TelemetrySocket;
+use dpdk_telemetry::protocol::*;
+use dpdk_telemetry::TelemetrySocket;
 
 pub fn run_once(socket_path: &Path, interval_secs: f64, _smooth: f64) -> Result<()> {
     let mut sock = TelemetrySocket::connect(socket_path)?;

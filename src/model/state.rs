@@ -1,15 +1,13 @@
 //! Top-level application state.
 
-use crate::engine::alerts::Alert;
-use crate::engine::history::RingBuffer;
-use crate::model::{MempoolState, PortRates, PortState};
+use dpdk_telemetry::alerts::Alert;
+use dpdk_telemetry::history::RingBuffer;
+use dpdk_telemetry::model::{MempoolState, PortRates, PortState};
 use std::path::PathBuf;
 use std::sync::RwLock;
 
 /// Default history length: 1 hour at 1s resolution.
 const PORT_HISTORY_LEN: usize = 3600;
-/// Queue history: 5 minutes.
-const QUEUE_HISTORY_LEN: usize = 300;
 /// Mempool history: 5 minutes.
 const MEMPOOL_HISTORY_LEN: usize = 300;
 
