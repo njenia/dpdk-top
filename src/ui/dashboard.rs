@@ -123,9 +123,9 @@ pub fn render_dashboard(frame: &mut Frame, state: &Arc<AppState>, area: Rect) {
         } else {
             q_lines.push(Line::from(vec![
                 Span::raw("        "),
-                Span::styled("RX pps", Style::from(selected_style())),
+                Span::styled("RX pps", selected_style()),
                 Span::raw("                              "),
-                Span::styled("TX pps", Style::from(selected_style())),
+                Span::styled("TX pps", selected_style()),
             ]));
             let max_rx = port
                 .queue_stats
