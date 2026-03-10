@@ -57,8 +57,8 @@ mod format {
 }
 
 mod rates {
-    use dpdk_telemetry::rates::{compute_port_rates, compute_queue_rates, delta, smooth_rate};
     use dpdk_telemetry::model::port::{PortRates, PortStats};
+    use dpdk_telemetry::rates::{compute_port_rates, compute_queue_rates, delta, smooth_rate};
 
     #[test]
     fn delta_normal() {
@@ -307,7 +307,10 @@ mod protocol {
         assert_eq!(info.name, "0000:00:06.0");
         assert_eq!(info.driver, "net_ena");
         assert_eq!(info.nb_rx_queues, 4);
-        assert_eq!(info.link_status, dpdk_telemetry::model::port::LinkStatus::Up);
+        assert_eq!(
+            info.link_status,
+            dpdk_telemetry::model::port::LinkStatus::Up
+        );
     }
 
     #[test]
@@ -317,14 +320,20 @@ mod protocol {
             "dev_started": 1
         }}"#;
         let info = parse_ethdev_info(json, 0).unwrap();
-        assert_eq!(info.link_status, dpdk_telemetry::model::port::LinkStatus::Up);
+        assert_eq!(
+            info.link_status,
+            dpdk_telemetry::model::port::LinkStatus::Up
+        );
     }
 
     #[test]
     fn parse_ethdev_info_missing_fields() {
         let json = r#"{"/ethdev/info,0": {}}"#;
         let info = parse_ethdev_info(json, 0).unwrap();
-        assert_eq!(info.link_status, dpdk_telemetry::model::port::LinkStatus::Unknown);
+        assert_eq!(
+            info.link_status,
+            dpdk_telemetry::model::port::LinkStatus::Unknown
+        );
         assert_eq!(info.nb_rx_queues, 0);
         assert_eq!(info.mtu, 0);
     }
@@ -404,7 +413,10 @@ mod protocol {
             "nb_tx_queues": 2
         }}"#;
         let info = parse_ethdev_info(json, 0).unwrap();
-        assert_eq!(info.link_status, dpdk_telemetry::model::port::LinkStatus::Down);
+        assert_eq!(
+            info.link_status,
+            dpdk_telemetry::model::port::LinkStatus::Down
+        );
         assert_eq!(info.nb_rx_queues, 2);
     }
 
