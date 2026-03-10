@@ -113,26 +113,42 @@ pub fn render_dashboard(frame: &mut Frame, state: &Arc<AppState>, area: Rect) {
 
     // Queue distribution for selected port
     if let Some(port) = ports.iter().find(|p| p.id == selected_id) {
-        let mut q_lines = vec![Line::from(format!(
-            " Port {} — Queues (RX pps) ",
-            selected_id
-        ))];
-        let total_rx: f64 = port.queue_stats.iter().map(|q| q.rx_pps).sum();
-        let max_rx = total_rx.max(1.0);
-        for (i, q) in port.queue_stats.iter().take(8).enumerate() {
-            let pct = (q.rx_pps / max_rx * 20.0) as usize;
-            let bar: String = "█".repeat(pct) + &"░".repeat(20 - pct);
-            q_lines.push(Line::from(format!(
-                " Q{} {} {:>10}/s",
-                i,
-                bar,
-                format_rate(q.rx_pps)
-            )));
-        }
+        let mut q_lines = vec![];
         if port.queue_stats.is_empty() {
             q_lines.push(Line::from(" (no queue stats) "));
+        } else {
+            q_lines.push(Line::from(vec![
+                Span::raw("        "),
+                Span::styled("RX pps", Style::from(selected_style())),
+                Span::raw("                              "),
+                Span::styled("TX pps", Style::from(selected_style())),
+            ]));
+            let max_rx = port
+                .queue_stats
+                .iter()
+                .map(|q| q.rx_pps)
+                .fold(1.0_f64, f64::max);
+            let max_tx = port
+                .queue_stats
+                .iter()
+                .map(|q| q.tx_pps)
+                .fold(1.0_f64, f64::max);
+            for (i, q) in port.queue_stats.iter().take(8).enumerate() {
+                let rx_bar_len = (q.rx_pps / max_rx * 15.0) as usize;
+                let tx_bar_len = (q.tx_pps / max_tx * 15.0) as usize;
+                let rx_bar = "█".repeat(rx_bar_len) + &"░".repeat(15 - rx_bar_len);
+                let tx_bar = "█".repeat(tx_bar_len) + &"░".repeat(15 - tx_bar_len);
+                q_lines.push(Line::from(format!(
+                    " Q{:<2} {} {:>10}    {} {:>10}",
+                    i,
+                    rx_bar,
+                    format_rate(q.rx_pps),
+                    tx_bar,
+                    format_rate(q.tx_pps)
+                )));
+            }
         }
-        let total_queues = port.info.nb_rx_queues;
+        let total_queues = port.info.nb_rx_queues.max(port.info.nb_tx_queues);
         let queue_title = if total_queues > 0 {
             format!(" Queues ({}) ", total_queues)
         } else {

@@ -3,7 +3,7 @@ members = ["dpdk-telemetry"]
 
 [package]
 name = "dpdk-top"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Real-time terminal-based monitoring for DPDK applications via telemetry"
 license = "Apache-2.0 OR MIT"
